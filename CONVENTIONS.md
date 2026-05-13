@@ -45,9 +45,18 @@
 - Columns: snake_case → `created_at`, `device_key`
 
 ### Branches
-Git format:  KAN-{nummer}-{beschreibung}
-PR title:    [KAN-{nummer}]: {beschreibung}
+Git format:  KAN-{number}-{description}
+PR title:    [KAN-{number}]: {description}
 
 Example:
 - Branch: KAN-13-Django-Setup
 - PR:     [KAN-13]: Django-Setup
+
+## Language
+- Code: English
+- Comments: English  
+- Commit messages: English
+- Branch names: English
+- PR titles: English
+- Variable names: English
+- Documentation: English
