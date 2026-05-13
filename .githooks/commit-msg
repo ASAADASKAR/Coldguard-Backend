@@ -1,0 +1,17 @@
+#!/bin/bash
+# ColdGuard Git Hook
+# Automatically adds Jira ticket link to commit message
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Extract ticket number e.g. CG-12
+TICKET=$(echo "$COMMIT_MSG" | grep -oE '[A-Z]+-[0-9]+')
+
+if [ -n "$TICKET" ]; then
+  JIRA_URL="https://asaadaskar.atlassian.net/browse/$TICKET"
+  echo "$COMMIT_MSG
+
+Jira: $JIRA_URL" > "$COMMIT_MSG_FILE"
+  echo "[ColdGuard Hook] Jira link added: $JIRA_URL"
+fi
