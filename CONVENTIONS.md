@@ -43,3 +43,11 @@
 ## Database
 - Tables: snake_case → `temperature_reading`
 - Columns: snake_case → `created_at`, `device_key`
+
+### Branches
+Git format:  KAN-{nummer}-{beschreibung}
+PR title:    [KAN-{nummer}]: {beschreibung}
+
+Example:
+- Branch: KAN-13-Django-Setup
+- PR:     [KAN-13]: Django-Setup
