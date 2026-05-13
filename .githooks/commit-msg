@@ -9,7 +9,7 @@ COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
 TICKET=$(echo "$COMMIT_MSG" | grep -oE '[A-Z]+-[0-9]+')
 
 if [ -n "$TICKET" ]; then
-  JIRA_URL="https://asaadaskar.atlassian.net/browse/$TICKET"
+  JIRA_URL="https://asaadaskar123.atlassian.net/browse/$TICKET"
   echo "$COMMIT_MSG
 
 Jira: $JIRA_URL" > "$COMMIT_MSG_FILE"
