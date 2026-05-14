@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import TemperatureReading
 from .serializers import TemperatureReadingSerializer
+from .notifications import NotificationService
+from .constants import TemperatureStatus
 
 
 class TemperatureAPIView(APIView):
@@ -38,6 +40,18 @@ class TemperatureAPIView(APIView):
 
         # Save to database
         reading = serializer.save()
+
+        # Send alarm notification if needed
+        if reading.status in [
+            TemperatureStatus.ALARM_HIGH,
+            TemperatureStatus.ALARM_LOW
+        ]:
+            NotificationService.send_alarm(
+                device_key=reading.device_key,
+                temperature=reading.temperature,
+                status=reading.status,
+                created_at=reading.created_at
+            )
 
         return Response(
             {
