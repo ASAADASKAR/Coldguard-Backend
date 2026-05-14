@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import TemperatureReading
-
+from .constants import TemperatureStatus, DS18B20
 
 class TemperatureReadingSerializer(serializers.ModelSerializer):
     """
@@ -13,16 +13,17 @@ class TemperatureReadingSerializer(serializers.ModelSerializer):
         fields = ['temperature', 'status', 'device_key']
 
     def validate_temperature(self, value):
-        """Temperature must be between -55 and 125 (DS18B20 range)"""
-        if value < -55 or value > 125:
+        """Temperature must be within DS18B20 sensor range"""
+        if value < DS18B20.MIN_RANGE or value > DS18B20.MAX_RANGE:
             raise serializers.ValidationError(
-                "Temperature out of sensor range (-55 to 125°C)"
+                f"Temperature out of sensor range "
+                f"({DS18B20.MIN_RANGE} to {DS18B20.MAX_RANGE}°C)"
             )
         return value
 
     def validate_status(self, value):
         """Status must be one of the allowed values"""
-        allowed = ['OK', 'ALARM_HIGH', 'ALARM_LOW']
+        allowed = [TemperatureStatus.OK, TemperatureStatus.ALARM_HIGH, TemperatureStatus.ALARM_LOW]
         if value not in allowed:
             raise serializers.ValidationError(
                 f"Status must be one of: {allowed}"

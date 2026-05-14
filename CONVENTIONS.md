@@ -60,3 +60,18 @@ Example:
 - PR titles: English
 - Variable names: English
 - Documentation: English
+
+## Constants & Magic Numbers
+
+- Never use magic strings or magic numbers directly in code
+- All constants go in constants.py in the relevant app
+- Use descriptive class names: TemperatureStatus, TemperatureThreshold
+- Example:
+  
+  # Wrong:
+  if status == 'ALARM_HIGH':
+  if temperature > 8.0:
+  
+  # Correct:
+  if status == TemperatureStatus.ALARM_HIGH:
+  if temperature > TemperatureThreshold.MAX:
