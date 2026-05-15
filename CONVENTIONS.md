@@ -75,3 +75,8 @@ Example:
   # Correct:
   if status == TemperatureStatus.ALARM_HIGH:
   if temperature > TemperatureThreshold.MAX:
+
+## Documentation
+- Use Google Style docstrings for all functions and classes
+- Sphinx for auto-generating documentation
+- Every public function must have a docstring
