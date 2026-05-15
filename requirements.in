@@ -1,0 +1,6 @@
+Django
+djangorestframework
+celery
+redis
+python-dotenv
+django-celery-beat
