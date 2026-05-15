@@ -1,0 +1,62 @@
+name: ColdGuard CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Check Django
+      env:
+        DJANGO_SETTINGS_MODULE: coldguard.settings
+        EMAIL_HOST_USER: test@test.com
+        EMAIL_HOST_PASSWORD: testpassword
+        ALARM_EMAIL_RECIPIENT: test@test.com
+      run: |
+        python manage.py check
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests
+      env:
+        DJANGO_SETTINGS_MODULE: coldguard.settings
+        EMAIL_HOST_USER: test@test.com
+        EMAIL_HOST_PASSWORD: testpassword
+        ALARM_EMAIL_RECIPIENT: test@test.com
+      run: |
+        python manage.py test
