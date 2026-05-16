@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     # Third party
     'rest_framework',
     # ColdGuard apps
-    'temperature',
+    'apps.temperature',
+    'apps.devices',
 ]
 
 MIDDLEWARE = [

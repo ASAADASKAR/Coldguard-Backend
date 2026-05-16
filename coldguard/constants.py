@@ -20,3 +20,13 @@ class NotificationType:
     EMAIL    = 'email'
     WHATSAPP = 'whatsapp'  # Phase 4
     SMS      = 'sms'       # Phase 4
+
+
+class AlarmType:
+    """
+    Human readable alarm type labels.
+    Used in all notification channels.
+    """
+    TOO_WARM              = 'TOO WARM'
+    TOO_COLD              = 'TOO COLD'
+    DEVICE_NOT_RESPONDING = 'DEVICE NOT RESPONDING'

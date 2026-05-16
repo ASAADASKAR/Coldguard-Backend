@@ -31,3 +31,11 @@ class DS18B20:
     """
     MIN_RANGE = -55.0   # Minimum measurable temperature
     MAX_RANGE = 125.0   # Maximum measurable temperature
+
+
+class HeartbeatConfig:
+    """
+    Configuration for heartbeat monitoring.
+    """
+    TIMEOUT_MINUTES = 5
+    CHECK_INTERVAL  = 300
