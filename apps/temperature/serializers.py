@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import TemperatureReading
 from .constants import TemperatureStatus, DS18B20
 
+
 class TemperatureReadingSerializer(serializers.ModelSerializer):
     """
     Defines the expected JSON format from ESP32.
@@ -10,10 +11,10 @@ class TemperatureReadingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TemperatureReading
-        fields = ['temperature', 'status', 'device_key']
+        fields = ['device', 'temperature', 'status']
 
     def validate_temperature(self, value):
-        """Temperature must be within DS18B20 sensor range"""
+        """Temperature must be within DS18B20 sensor range."""
         if value < DS18B20.MIN_RANGE or value > DS18B20.MAX_RANGE:
             raise serializers.ValidationError(
                 f"Temperature out of sensor range "
@@ -22,8 +23,12 @@ class TemperatureReadingSerializer(serializers.ModelSerializer):
         return value
 
     def validate_status(self, value):
-        """Status must be one of the allowed values"""
-        allowed = [TemperatureStatus.OK, TemperatureStatus.ALARM_HIGH, TemperatureStatus.ALARM_LOW]
+        """Status must be one of the allowed values."""
+        allowed = [
+            TemperatureStatus.OK,
+            TemperatureStatus.ALARM_HIGH,
+            TemperatureStatus.ALARM_LOW,
+        ]
         if value not in allowed:
             raise serializers.ValidationError(
                 f"Status must be one of: {allowed}"
