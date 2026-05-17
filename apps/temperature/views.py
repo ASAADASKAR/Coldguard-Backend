@@ -71,7 +71,7 @@ class TemperatureAPIView(APIView):
             {
                 'message': 'Temperature saved successfully',
                 'id': reading.id,
-                'device': device.name,
+                'device': device.display_name,
                 'customer': device.customer.name,
                 'temperature': reading.temperature,
                 'status': reading.status,

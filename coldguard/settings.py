@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # ColdGuard apps
     'apps.temperature',
+    'apps.customers',
     'apps.devices',
 ]
 
