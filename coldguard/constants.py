@@ -25,7 +25,7 @@ class NotificationType:
 class AlarmType:
     """
     Human readable alarm type labels.
-    Used in all notification channels.
+    Used in all notification channels (email, WhatsApp, SMS, ...).
     """
     TOO_WARM              = 'TOO WARM'
     TOO_COLD              = 'TOO COLD'

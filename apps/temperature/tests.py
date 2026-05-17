@@ -1,8 +1,12 @@
 from django.test import TestCase
+from django.utils import timezone
+from datetime import timedelta
 from apps.customers.models import Customer
 from apps.devices.models import Device
 from apps.temperature.models import TemperatureReading
 from unittest.mock import patch
+from apps.temperature.tasks import check_heartbeat
+from apps.temperature.constants import TemperatureStatus
 
 class TemperatureGETTestCase(TestCase):
     """Tests for GET /api/temperature/ endpoint."""
@@ -179,3 +183,97 @@ class AlarmEmailTestCase(TestCase):
                 HTTP_X_DEVICE_KEY='coldguard-test-alarm'
             )
             mock.assert_called_once()
+
+
+class HeartbeatTestCase(TestCase):
+    """
+    Tests for the heartbeat checker task.
+    """
+
+    def setUp(self):
+        """Create test customer and device before each test."""
+        self.customer = Customer.objects.create(
+            name="Test Restaurant",
+            email="test@restaurant.de",
+            phone="+49 40 123456"
+        )
+        self.device = Device.objects.create(
+            customer=self.customer,
+            device_key="coldguard-test-001",
+            display_name="Test Fridge",
+            location="Kitchen",
+            is_active=True
+        )
+
+    def test_heartbeat_no_alarm(self):
+        """
+        Device sent data 2 minutes ago → no alarm should be sent.
+        """
+        # Create recent reading (2 minutes ago)
+        reading = TemperatureReading.objects.create(
+            device=self.device,
+            temperature=4.5,
+            status=TemperatureStatus.OK,
+        )
+        reading.created_at = timezone.now() - timedelta(minutes=2)
+        reading.save()
+
+        # Run heartbeat check
+        with patch(
+            'apps.temperature.tasks.NotificationService.send_alarm'
+        ) as mock_alarm:
+            check_heartbeat()
+            mock_alarm.assert_not_called()  # No alarm!
+
+    def test_heartbeat_alarm(self):
+        """
+        Device sent data 10 minutes ago → alarm should be sent!
+        """
+        # Create old reading (10 minutes ago)
+        reading = TemperatureReading.objects.create(
+            device=self.device,
+            temperature=4.5,
+            status=TemperatureStatus.OK,
+        )
+        reading.created_at = timezone.now() - timedelta(minutes=10)
+        reading.save()
+
+        # Run heartbeat check
+        with patch(
+            'apps.temperature.tasks.NotificationService.send_alarm'
+        ) as mock_alarm:
+            check_heartbeat()
+            mock_alarm.assert_called_once()  # Alarm sent!
+
+    def test_heartbeat_no_readings(self):
+        """
+        Device has never sent data → no alarm should be sent.
+        """
+        with patch(
+            'apps.temperature.tasks.NotificationService.send_alarm'
+        ) as mock_alarm:
+            check_heartbeat()
+            mock_alarm.assert_not_called()  # No alarm!
+
+    def test_inactive_device_ignored(self):
+        """
+        Inactive device should be ignored by heartbeat checker.
+        """
+        # Deactivate device
+        self.device.is_active = False
+        self.device.save()
+
+        # Create old reading
+        reading = TemperatureReading.objects.create(
+            device=self.device,
+            temperature=4.5,
+            status=TemperatureStatus.OK,
+        )
+        reading.created_at = timezone.now() - timedelta(minutes=10)
+        reading.save()
+
+        with patch(
+            'apps.temperature.tasks.NotificationService.send_alarm'
+        ) as mock_alarm:
+            check_heartbeat()
+            mock_alarm.assert_not_called()  # Inactive → no alarm!

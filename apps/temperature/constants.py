@@ -33,9 +33,17 @@ class DS18B20:
     MAX_RANGE = 125.0   # Maximum measurable temperature
 
 
+class TemperatureStatus:
+    """Possible temperature reading statuses"""
+    OK         = 'OK'
+    ALARM_HIGH = 'ALARM_HIGH'   # Temperature > MAX
+    ALARM_LOW  = 'ALARM_LOW'    # Temperature < MIN
+    HEARTBEAT_FAILURE = 'HEARTBEAT_FAILURE'
+
+
 class HeartbeatConfig:
     """
     Configuration for heartbeat monitoring.
     """
-    TIMEOUT_MINUTES = 5
-    CHECK_INTERVAL  = 300
+    TIMEOUT_MINUTES = 5    # Minutes before heartbeat alarm
+    CHECK_INTERVAL  = 300  # Celery check interval in seconds
