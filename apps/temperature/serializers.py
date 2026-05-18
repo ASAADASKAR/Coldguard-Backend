@@ -7,11 +7,13 @@ class TemperatureReadingSerializer(serializers.ModelSerializer):
     """
     Defines the expected JSON format from ESP32.
     Validates incoming data automatically.
+    Used for both POST (ESP32 sends data) and GET (Dashboard reads data).
     """
 
     class Meta:
         model = TemperatureReading
-        fields = ['device', 'temperature', 'status']
+        fields = ['id', 'device', 'temperature', 'status', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
     def validate_temperature(self, value):
         """Temperature must be within DS18B20 sensor range."""
