@@ -34,6 +34,15 @@ class TemperatureGETTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
+        # Check correct fields are returned
+        reading = response.data[0]
+        self.assertIn('timestamp', reading)          # created_at renamed to timestamp
+        self.assertIn('device_key', reading)         # device_key returned
+        self.assertIn('temperature', reading)        # temperature returned
+        self.assertIn('status', reading)             # status returned
+        self.assertNotIn('device', reading)          # device ID hidden (write_only)
+        self.assertNotIn('created_at', reading)      # renamed to timestamp
+
     def test_get_by_customer_id(self):
         """GET with customer_id returns all device readings."""
         response = self.client.get(
@@ -56,8 +65,6 @@ class TemperatureGETTestCase(TestCase):
 
     def test_get_by_customer_id_multiple_devices(self):
         """GET with customer_id returns readings from ALL devices."""
-        
-        # Second device for same customer
         device2 = Device.objects.create(
             customer=self.customer,
             device_key="coldguard-test-get-2",
@@ -70,9 +77,8 @@ class TemperatureGETTestCase(TestCase):
             temperature=5.0,
             status="OK"
         )
-
         response = self.client.get(
             f'/api/temperature/?customer_id={self.customer.id}'
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 2) 
+        self.assertEqual(len(response.data), 2)

@@ -122,7 +122,7 @@ class TemperatureAPIView(APIView):
 
         # Get data from request
         data = request.data.copy()
-        data['device'] = device.id
+        data['device_id'] = device.id
 
         # Validate with serializer
         serializer = TemperatureReadingSerializer(data=data)

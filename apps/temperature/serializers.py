@@ -10,10 +10,32 @@ class TemperatureReadingSerializer(serializers.ModelSerializer):
     Used for both POST (ESP32 sends data) and GET (Dashboard reads data).
     """
 
+    # Alias for created_at — clearer for API consumers
+    timestamp = serializers.DateTimeField(
+        source='created_at',
+        read_only=True
+    )
+
+    # Return device_key instead of device ID — more meaningful
+    device_key = serializers.CharField(
+        source='device.device_key',
+        read_only=True
+    )
+
     class Meta:
         model = TemperatureReading
-        fields = ['id', 'device', 'temperature', 'status', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = [
+            'id',           # Reading ID
+            'device',    # Device ID — required for POST (write only)
+            'device_key',   # Device key — returned in GET (read only)
+            'temperature',  # Temperature in Celsius
+            'status',       # OK | ALARM_HIGH | ALARM_LOW
+            'timestamp',    # When the reading was taken
+        ]
+        read_only_fields = ['id', 'timestamp', 'device_key']
+        extra_kwargs = {
+            'device': {'write_only': True}  # hidden in GET, used in POST
+        }
 
     def validate_temperature(self, value):
         """Temperature must be within DS18B20 sensor range."""
