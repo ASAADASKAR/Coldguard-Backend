@@ -30,4 +30,4 @@ class TemperatureReading(models.Model):
         verbose_name_plural = 'Temperature Readings'
 
     def __str__(self):
-        return f"{self.device.name} — {self.temperature}°C ({self.status})"
+        return f"{self.device.display_name} — {self.temperature}°C ({self.status})"
