@@ -1,6 +1,7 @@
-Django
+Django==6.0.5
 djangorestframework
 celery
 redis
 python-dotenv
 django-celery-beat
+django-cors-headers
