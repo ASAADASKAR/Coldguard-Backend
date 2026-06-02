@@ -122,7 +122,7 @@ class TemperatureAPIView(APIView):
 
         # Get data from request
         data = request.data.copy()
-        data['device_id'] = device.id
+        data['device'] = device.id
 
         # Validate with serializer
         serializer = TemperatureReadingSerializer(data=data)
@@ -141,13 +141,22 @@ class TemperatureAPIView(APIView):
             TemperatureStatus.ALARM_HIGH,
             TemperatureStatus.ALARM_LOW
         ]:
-            NotificationService.send_alarm(
-                device_key=device_key,
-                temperature=reading.temperature,
-                status=reading.status,
-                created_at=reading.created_at,
-                recipient_email=device.customer.email
-            )
+            # Get pervious reading 
+            previous = device.readings.order_by('-created_at').exclude(
+                    id=reading.id
+            ).first()
+
+            # Only send if previous reading was OK or no previous reading
+            was_ok = previous is None or previous.status == TemperatureStatus.OK
+
+            if was_ok:
+                NotificationService.send_alarm(
+                    device_key=device_key,
+                    temperature=reading.temperature,
+                    status=reading.status,
+                    created_at=reading.created_at,
+                    recipient_email=device.customer.email
+                )
 
         return Response(
             {

@@ -2,7 +2,7 @@ from django.test import TestCase
 from apps.customers.models import Customer
 from apps.devices.models import Device
 from apps.temperature.models import TemperatureReading
-
+from unittest.mock import patch
 
 class TemperatureGETTestCase(TestCase):
     """Tests for GET /api/temperature/ endpoint."""
@@ -82,3 +82,100 @@ class TemperatureGETTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
+
+
+class AlarmEmailTestCase(TestCase):
+    """Tests for KAN-44 — alarm email sent only once per alarm event."""
+
+    def setUp(self):
+        self.customer = Customer.objects.create(
+            name="Test Restaurant",
+            email="test@restaurant.de",
+            phone="+49 40 123456"
+        )
+        self.device = Device.objects.create(
+            customer=self.customer,
+            device_key="coldguard-test-alarm",
+            display_name="Test Fridge",
+            location="Kitchen",
+            is_active=True
+        )
+
+    def test_first_alarm_sends_email(self):
+        TemperatureReading.objects.create(
+            device=self.device,
+            temperature=4.5,
+            status="OK"
+        )
+
+        with patch('apps.temperature.notifications.NotificationService.send_alarm') as mock:
+            response = self.client.post(
+                '/api/temperature/',
+                data={
+                    'temperature': 9.5,
+                    'status': 'ALARM_HIGH',
+                    'device_id': self.device.id
+                },
+                content_type='application/json',
+                HTTP_X_DEVICE_KEY='coldguard-test-alarm'
+            )
+            print(f"\nStatus: {response.status_code}")
+            print(f"Response: {response.data}")
+            mock.assert_called_once()
+
+    def test_second_alarm_no_email(self):
+        """Second ALARM in a row → no email."""
+        TemperatureReading.objects.create(
+            device=self.device,
+            temperature=9.5,
+            status="ALARM_HIGH"
+        )
+
+        with patch('apps.temperature.notifications.NotificationService.send_alarm') as mock:
+            self.client.post(
+                '/api/temperature/',
+                data={
+                    'temperature': 9.5,
+                    'status': 'ALARM_HIGH',
+                    'device_id': self.device.id 
+                },
+                content_type='application/json',
+                HTTP_X_DEVICE_KEY='coldguard-test-alarm'
+            )
+            mock.assert_not_called()
+
+    def test_alarm_after_recovery_sends_email(self):
+        """ALARM → OK → ALARM → email sent again."""
+        TemperatureReading.objects.create(
+            device=self.device,
+            temperature=4.5,
+            status="OK"
+        )
+
+        with patch('apps.temperature.notifications.NotificationService.send_alarm') as mock:
+            self.client.post(
+                '/api/temperature/',
+                data={
+                    'temperature': 9.5,
+                    'status': 'ALARM_HIGH',
+                    'device_id': self.device.id
+                },
+                content_type='application/json',
+                HTTP_X_DEVICE_KEY='coldguard-test-alarm'
+            )
+            mock.assert_called_once()
+
+    def test_no_previous_reading_sends_email(self):
+        """First ever reading is ALARM → email sent."""
+        with patch('apps.temperature.notifications.NotificationService.send_alarm') as mock:
+            self.client.post(
+                '/api/temperature/',
+                data={
+                    'temperature': 9.5,
+                    'status': 'ALARM_HIGH',
+                    'device_id': self.device.id 
+                },
+                content_type='application/json',
+                HTTP_X_DEVICE_KEY='coldguard-test-alarm'
+            )
+            mock.assert_called_once()
