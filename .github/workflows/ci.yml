@@ -59,4 +59,4 @@ jobs:
         EMAIL_HOST_PASSWORD: testpassword
         ALARM_EMAIL_RECIPIENT: test@test.com
       run: |
-        python manage.py test
+        python manage.py test --verbosity=2

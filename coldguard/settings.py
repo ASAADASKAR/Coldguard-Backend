@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from apps.temperature.constants import HeartbeatConfig
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,6 +36,22 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'host.wokwi.internal']
 
 # Application definition
 
+# ─── Celery Configuration ────────────────────────────
+# Redis as message broker
+CELERY_BROKER_URL    = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_TIMEZONE = 'Europe/Berlin'
+
+# Celery Beat — periodic tasks
+CELERY_BEAT_SCHEDULE = {
+    'check-heartbeat-every-5-minutes': {
+        'task': 'temperature.tasks.check_heartbeat',  # Path to the task
+        'schedule': HeartbeatConfig.CHECK_INTERVAL,
+    },
+}
+# ─── Installed Apps ──────────────────────────────────
+# Add django_celery_beat to INSTALLED_APPS
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,6 +62,7 @@ INSTALLED_APPS = [
     # Third party
     'rest_framework',
     'corsheaders',
+    'django_celery_beat',
     # ColdGuard apps
     'apps.temperature',
     'apps.customers',
