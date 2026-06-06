@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-ds(!7^mqefy5t(^@ojiq0&&%0@1eorp%!sj)twawyeje$(gotb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'host.wokwi.internal']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'host.wokwi.internal', '192.168.178.23']
 
 
 # Application definition
