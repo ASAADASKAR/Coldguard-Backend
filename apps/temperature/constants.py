@@ -1,6 +1,8 @@
 # ─── Temperature App Constants ───────────────────────
 # Only used within the temperature app
 
+from django.db import models
+
 
 class TemperatureStatus:
     """Possible temperature reading statuses"""
@@ -47,3 +49,45 @@ class HeartbeatConfig:
     """
     TIMEOUT_MINUTES = 5    # Minutes before heartbeat alarm
     CHECK_INTERVAL  = 300  # Celery check interval in seconds
+
+class LogLevel(models.TextChoices):
+    """Log levels for device error logging."""
+    INFO  = 'INFO',  'Info'
+    WARN  = 'WARN',  'Warning'
+    ERROR = 'ERROR', 'Error'
+
+
+class DeviceErrorMessages:
+    """
+    Human-readable error messages for customers.
+    Maps technical firmware errors to user-friendly messages.
+    Used in dashboard and email notifications.
+    """
+
+    MESSAGES = {
+        'Sensor not found — check wiring': {
+            'de': 'Gerät nicht erreichbar — bitte Support kontaktieren',
+            'en': 'Device unreachable — please contact support',
+            'ar': 'جهاز الاستشعار غير متاح — يرجى التواصل مع الدعم',
+        },
+        'WiFi connection failed': {
+            'de': 'Verbindungsproblem — WLAN prüfen',
+            'en': 'Connection issue — check WiFi',
+            'ar': 'مشكلة في الاتصال — تحقق من الواي فاي',
+        },
+        'Server unreachable after 3 retries': {
+            'de': 'Gerät offline — Stromverbindung prüfen',
+            'en': 'Device offline — check power connection',
+            'ar': 'الجهاز غير متصل — تحقق من مصدر الطاقة',
+        },
+    }
+
+    @classmethod
+    def get(cls, technical_message: str, language: str = 'en') -> str:
+        """
+        Returns customer-friendly message for a technical error.
+        Falls back to English if language not found.
+        Falls back to technical message if not in dictionary.
+        """
+        messages = cls.MESSAGES.get(technical_message, {})
+        return messages.get(language) or messages.get('en') or technical_message

@@ -1,6 +1,6 @@
 from django.db import models
 from apps.devices.models import Device
-
+from .constants import LogLevel
 
 class TemperatureReading(models.Model):
     """
@@ -31,3 +31,24 @@ class TemperatureReading(models.Model):
 
     def __str__(self):
         return f"{self.device.display_name} — {self.temperature}°C ({self.status})"
+
+
+
+class DeviceLog(models.Model):
+    device     = models.ForeignKey(
+        Device,
+        on_delete=models.CASCADE,
+        related_name='logs'
+    )
+    level      = models.CharField(
+        max_length=20,
+        choices=LogLevel.choices
+    )
+    message    = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.device.device_key} [{self.level}] {self.message}"

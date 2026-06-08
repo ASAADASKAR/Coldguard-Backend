@@ -31,7 +31,11 @@ SECRET_KEY = 'django-insecure-ds(!7^mqefy5t(^@ojiq0&&%0@1eorp%!sj)twawyeje$(gotb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LOCAL_IP = os.getenv('LOCAL_IP', '') 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'host.wokwi.internal']
+
+if LOCAL_IP:
+    ALLOWED_HOSTS.append(LOCAL_IP)
 
 
 # Application definition

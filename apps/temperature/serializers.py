@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import TemperatureReading
-from .constants import TemperatureStatus, DS18B20
+from .models import TemperatureReading, DeviceLog
+from .constants import TemperatureStatus, DS18B20, LogLevel, DeviceErrorMessages
 
 
 class TemperatureReadingSerializer(serializers.ModelSerializer):
@@ -58,3 +58,50 @@ class TemperatureReadingSerializer(serializers.ModelSerializer):
                 f"Status must be one of: {allowed}"
             )
         return value
+    
+
+class DeviceLogSerializer(serializers.ModelSerializer):
+    """
+    Serializer for DeviceLog model.
+    Used for both:
+    - POST: ESP32 sends error logs
+    - GET:  Dashboard reads error history with translated messages
+    """
+
+    device_key = serializers.CharField(
+        source='device.device_key',
+        read_only=True
+    )
+
+    timestamp = serializers.DateTimeField(
+        source='created_at',
+        read_only=True
+    )
+
+    level = serializers.ChoiceField(
+        choices=LogLevel.choices
+    )
+
+    # Translated message for customer
+    friendly_message = serializers.SerializerMethodField()
+
+    def get_friendly_message(self, obj):
+        """Returns customer-friendly message in requested language."""
+        lang = self.context.get('lang', 'en')
+        return DeviceErrorMessages.get(obj.message, lang)
+
+    class Meta:
+        model = DeviceLog
+        fields = [
+            'id',
+            'device',           # write only
+            'device_key',       # read only
+            'level',            # INFO | WARN | ERROR
+            'message',          # raw technical message
+            'friendly_message', # translated for customer
+            'timestamp',
+        ]
+        read_only_fields = ['id', 'timestamp', 'device_key', 'friendly_message']
+        extra_kwargs = {
+            'device': {'write_only': True}
+        }
